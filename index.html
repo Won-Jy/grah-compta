@@ -153,6 +153,7 @@ select.input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://ww
 .status.paid { background: var(--in); }
 .status.unpaid { border: 1.5px dashed var(--ink); padding: 2px 7px; }
 .status.inactive { color: var(--grey); font-weight: 500; }
+.status.carried { border: 1.5px solid var(--ink); padding: 2px 7px; font-weight: 600; }
 
 /* 보고서 */
 .rep-head { margin-bottom: 14px; }
@@ -341,6 +342,7 @@ select.input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://ww
     </div>
     <div class="filters">
       <div class="chips scroll" id="m-year"></div>
+      <div class="chips scroll" id="m-cat"></div>
       <div class="chips scroll" id="m-filter"></div>
       <div class="search">
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5.2" stroke="#000" stroke-width="2" fill="none"/><path d="M11 11l3.5 3.5" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>
@@ -387,10 +389,14 @@ select.input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://ww
       <h2 data-i18n="feesTitle"></h2>
       <p data-i18n="feesDesc"></p>
       <div class="row2">
-        <div class="field"><label for="s-fee-amount" data-i18n="feeAmount"></label><input class="input num" id="s-fee-amount" inputmode="decimal"></div>
-        <div class="field"><label for="s-fee-cat" data-i18n="feeCategory"></label><select class="input" id="s-fee-cat"></select></div>
+        <div class="field"><label for="s-fee-normal" data-i18n="feeNormal"></label><input class="input num" id="s-fee-normal" inputmode="decimal"></div>
+        <div class="field"><label for="s-fee-student" data-i18n="feeStudent"></label><input class="input num" id="s-fee-student" inputmode="decimal"></div>
       </div>
-      <div class="field"><label for="s-don-cat" data-i18n="donCategory"></label><select class="input" id="s-don-cat"></select></div>
+      <div class="row2">
+        <div class="field"><label for="s-fee-cat" data-i18n="feeCategory"></label><select class="input" id="s-fee-cat"></select></div>
+        <div class="field"><label for="s-don-cat" data-i18n="donCategory"></label><select class="input" id="s-don-cat"></select></div>
+      </div>
+      <div class="field"><label for="s-late" data-i18n="lateJoin"></label><select class="input" id="s-late"></select><div class="hint" data-i18n="lateJoinHint"></div></div>
     </div>
 
     <div class="set-block">
@@ -461,14 +467,19 @@ select.input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://ww
       <div style="height:12px"></div>
       <div class="field"><label for="mf-name" data-i18n="mName"></label><input class="input" id="mf-name" autocomplete="off"></div>
       <div class="row2">
+        <div class="field"><label for="mf-category" data-i18n="mCategory"></label><select class="input" id="mf-category"></select></div>
         <div class="field"><label for="mf-role" data-i18n="mRole"></label><select class="input" id="mf-role"></select></div>
+      </div>
+      <div class="row2">
+        <div class="field" id="wrap-tarif"><span class="label" data-i18n="mTarif"></span><div class="chips" id="mf-tarif"></div></div>
         <div class="field"><label for="mf-joined" data-i18n="mJoined"></label><input class="input num" id="mf-joined" type="date"></div>
       </div>
       <div class="field"><label for="mf-email"><span data-i18n="mEmail"></span> <span class="opt" data-i18n="optional"></span></label><input class="input" id="mf-email" type="email" autocomplete="off"></div>
       <div class="field"><label for="mf-phone"><span data-i18n="mPhone"></span> <span class="opt" data-i18n="optional"></span></label><input class="input" id="mf-phone" type="tel" autocomplete="off"></div>
       <div class="field"><label for="mf-address"><span data-i18n="mAddress"></span> <span class="opt" data-i18n="optional"></span></label><textarea class="input" id="mf-address" rows="2"></textarea><div class="hint" data-i18n="mAddressHint"></div></div>
       <div class="field"><label for="mf-note"><span data-i18n="note"></span> <span class="opt" data-i18n="optional"></span></label><input class="input" id="mf-note" autocomplete="off"></div>
-      <label class="check"><input type="checkbox" id="mf-active"> <span data-i18n="mActive"></span></label>
+      <label class="check" style="margin-bottom:4px"><input type="checkbox" id="mf-active"> <span data-i18n="mActive"></span></label>
+      <div class="hint" style="margin:0 0 16px 30px" data-i18n="mActiveHint"></div>
       <div class="sheet-actions">
         <button class="btn ghost" id="mf-cancel" data-i18n="cancel"></button>
         <button class="btn" id="mf-save" data-i18n="save"></button>
@@ -506,31 +517,35 @@ const I18N = {
     noDesc: '(내용 없음)', transfer: '계정 이동', dayN: '{d}일',
     dKind: '구분', dAccount: '계정', dMember: '회원', dBy: '입력', dPeriod: '회비 연도',
     delete: '삭제', edit: '수정', close: '닫기', cancel: '취소', confirmDelete: '"{t}" {a}을(를) 삭제할까요?', deleted: '삭제했어요',
-    activeMembers: '활성 회원', paidCount: '회비 납부', feeTotal: '회비 합계',
-    mfAll: '모두', mfPaid: '납부', mfUnpaid: '미납', mfInactive: '비활성',
+    activeMembers: '현재 회원', paidCount: '회비 납부', feeTotal: '회비 합계',
+    mfAll: '모두', mfPaid: '납부', mfUnpaid: '미납', mfInactive: '지난 회원', allCats: '모든 등급',
     memberSearchPh: '이름, 이메일 검색', exportMembers: '회원 CSV', addMember: '회원 추가',
     membersEmptyTitle: '아직 회원이 없어요', membersEmptyBody: '회원을 추가하면 연도별 회비 납부 현황을 볼 수 있어요.',
-    paid: '납부', unpaid: '미납', inactive: '비활성', collectFee: '{y}년 회비 받기', collectShort: '회비 받기',
+    paid: '납부', unpaid: '미납', inactive: '지난 회원', carried: '{y}년 가입 포함', collectFee: '{y}년 회비 받기', collectShort: '회비 받기',
     since: '{d} 가입', mPayments: '회비 기록', mDons: '기부 합계', none: '없음',
-    newMember: '새 회원', editMember: '회원 정보 수정', mName: '이름', mRole: '역할', mJoined: '가입일', mEmail: '이메일', mPhone: '전화',
-    mAddress: '주소', mAddressHint: '기부 영수증(reçu fiscal)을 발행할 때 필요해요.', mActive: '활성 회원', deleteMember: '회원 삭제',
+    newMember: '새 회원', editMember: '회원 정보 수정', mName: '이름', mRole: '직책 (bureau)', mCategory: '회원 등급', mTarif: '회비 구분', mJoined: '가입일', mEmail: '이메일', mPhone: '전화',
+    mAddress: '주소', mAddressHint: '기부 영수증(reçu fiscal)을 발행할 때 필요해요.', mActive: '현재 회원', mActiveHint: '체크를 해제하면 지난 회원으로 옮겨져요. 기록은 그대로 남아요.', deleteMember: '회원 삭제',
     errName: '이름을 입력하세요', memberSaved: '회원을 저장했어요', memberDeleted: '회원을 삭제했어요',
-    memberHasEntries: '이 회원과 연결된 기록이 {n}건 있어요. 삭제 대신 비활성으로 바꿔 주세요.', confirmDeleteMember: '{n}을(를) 삭제할까요?',
-    role_president: '회장', role_treasurer: '회계', role_secretary: '서기', role_board: '이사', role_member: '회원', role_honorary: '명예회원', role_benefactor: '후원회원',
+    memberHasEntries: '이 회원과 연결된 기록이 {n}건 있어요. 삭제 대신 "현재 회원" 체크를 해제해 지난 회원으로 옮겨 주세요.', confirmDeleteMember: '{n}을(를) 삭제할까요?',
+    role_none: '없음', role_president: '회장', role_treasurer: '회계', role_secretary: '서기',
+    cat_founder: '창립 회원', cat_actif: '운영 회원 (actif)', cat_adherent: '일반 회원 (adhérent)', cat_bienfaiteur: '후원 회원',
+    catS_founder: '창립', catS_actif: '운영', catS_adherent: '일반', catS_bienfaiteur: '후원',
+    tarifNormal: '일반', tarifStudent: '학생', catCounts: '등급별',
     feeDesc: '{y}년 회비',
     yearReport: '{y}년 회계', allReport: '전체 기간', repSub: '수입 {i}건, 지출 {o}건',
     recettes: '수입 · Recettes', depenses: '지출 · Dépenses', excedent: '흑자 · Excédent', deficit: '적자 · Déficit',
     balances: '계정 잔액', asOf: '{d} 기준', now: '현재', sumTotal: '합계', balHint: '은행 잔고와 비교해 보세요. 다르면 빠진 기록이나 기초 잔액(설정)을 확인하세요.',
     byProject: '프로젝트별', byMethod: '결제수단별 지출', noRecords: '기록 없음', unassigned: '(미지정)',
-    feesSection: '회비', feesLine: '활성 회원 {a}명 중 {p}명 납부', donorsSection: '기부자별 기부', donorsHint: '기부 영수증 발행 때 이 목록을 쓰면 돼요. 회원으로 연결된 기부자는 주소가 있는지 확인하세요.',
+    feesSection: '회비', feesLine: '현재 회원 {a}명 중 {p}명 납부', donorsSection: '기부자별 기부', donorsHint: '기부 영수증 발행 때 이 목록을 쓰면 돼요. 회원으로 연결된 기부자는 주소가 있는지 확인하세요.',
     missingPieces: '증빙이 없는 지출이 {n}건 있어요 ({a}).', seeList: '목록 보기',
     printReport: '보고서 인쇄 / PDF 저장', exportYear: '이 연도 CSV 내보내기',
     thisDevice: '이 기기', thisDeviceDesc: '이름은 기록마다 누가 입력했는지 남기는 데 쓰여요. 언어는 기기마다 따로 정할 수 있어요.',
     yourName: '내 이름', yourNamePh: '예: Won', language: '언어',
     connTitle: '구글 시트 연결', connDesc: '이 기기에만 저장됩니다. 공개 저장소에 주소와 키가 노출되지 않도록 코드에 넣지 않았어요.',
     connUrl: 'Apps Script 웹앱 주소', connKey: '접근 키', connKeyPh: 'Code.gs의 ACCESS_KEY와 같은 값', connect: '연결하고 불러오기', copySetupLink: '다른 기기용 연결 링크 복사',
-    feesTitle: '회비와 기부', feesDesc: '회비 카테고리로 기록하면 회원별 납부 현황에 자동으로 반영돼요.',
-    feeAmount: '연 회비 (€)', feeCategory: '회비 카테고리', donCategory: '기부 카테고리',
+    feesTitle: '회비와 기부', feesDesc: '회비 카테고리로 기록하면 회원별 납부 현황에 자동으로 반영돼요. 회비 금액은 회원의 회비 구분(일반/학생)에 맞춰 채워져요.',
+    feeNormal: '일반 회비 (€)', feeStudent: '학생 회비 (€)', feeCategory: '회비 카테고리', donCategory: '기부 카테고리',
+    lateJoin: '연말 가입 규칙', lateJoinHint: '이 날짜 이후 처음 가입해 그해 회비를 내면 다음 해 12월 31일까지 회원으로 봐요.', lateOff: '사용 안 함', lateFrom: '{m} 1일부터',
     accountsTitle: '계정과 기초 잔액', accountsDesc: '협회를 시작할 때 각 계정에 있던 금액이에요. 잔액 계산의 출발점이 됩니다.',
     categoriesTitle: '카테고리', methodsTitle: '결제수단', projectsTitle: '프로젝트 / 활동', dataTitle: '데이터',
     newAccountPh: '새 계정 (예: Livret A)', newCatPh: '새 카테고리', newMethodPh: '새 결제수단', newProjectPh: '새 프로젝트 이름', add: '추가',
@@ -566,31 +581,35 @@ const I18N = {
     noDesc: '(sans libellé)', transfer: 'Virement interne', dayN: 'le {d}',
     dKind: 'Type', dAccount: 'Compte', dMember: 'Membre', dBy: 'Saisi par', dPeriod: 'Année de cotisation',
     delete: 'Supprimer', edit: 'Modifier', close: 'Fermer', cancel: 'Annuler', confirmDelete: 'Supprimer « {t} » ({a}) ?', deleted: 'Supprimé',
-    activeMembers: 'Membres actifs', paidCount: 'À jour', feeTotal: 'Cotisations',
-    mfAll: 'Tous', mfPaid: 'À jour', mfUnpaid: 'Non réglée', mfInactive: 'Inactifs',
+    activeMembers: 'Membres en cours', paidCount: 'À jour', feeTotal: 'Cotisations',
+    mfAll: 'Tous', mfPaid: 'À jour', mfUnpaid: 'Non réglée', mfInactive: 'Anciens membres', allCats: 'Toutes catégories',
     memberSearchPh: 'Nom, e-mail', exportMembers: 'CSV membres', addMember: 'Ajouter un membre',
     membersEmptyTitle: 'Aucun membre pour l’instant', membersEmptyBody: 'Ajoutez les membres pour suivre les cotisations par année.',
-    paid: 'À jour', unpaid: 'Non réglée', inactive: 'Inactif', collectFee: 'Encaisser la cotisation {y}', collectShort: 'Encaisser',
+    paid: 'À jour', unpaid: 'Non réglée', inactive: 'Ancien membre', carried: 'Incluse (adhésion {y})', collectFee: 'Encaisser la cotisation {y}', collectShort: 'Encaisser',
     since: 'membre depuis le {d}', mPayments: 'Cotisations', mDons: 'Total des dons', none: 'Aucune',
-    newMember: 'Nouveau membre', editMember: 'Modifier le membre', mName: 'Nom', mRole: 'Rôle', mJoined: 'Adhésion', mEmail: 'E-mail', mPhone: 'Téléphone',
-    mAddress: 'Adresse', mAddressHint: 'Nécessaire pour établir un reçu fiscal.', mActive: 'Membre actif', deleteMember: 'Supprimer ce membre',
+    newMember: 'Nouveau membre', editMember: 'Modifier le membre', mName: 'Nom', mRole: 'Fonction au bureau', mCategory: 'Catégorie de membre', mTarif: 'Tarif', mJoined: 'Adhésion', mEmail: 'E-mail', mPhone: 'Téléphone',
+    mAddress: 'Adresse', mAddressHint: 'Nécessaire pour établir un reçu fiscal.', mActive: 'Membre en cours', mActiveHint: 'Décochez pour le passer en ancien membre. Ses écritures sont conservées.', deleteMember: 'Supprimer ce membre',
     errName: 'Saisissez un nom', memberSaved: 'Membre enregistré', memberDeleted: 'Membre supprimé',
-    memberHasEntries: '{n} écritures sont liées à ce membre. Passez-le plutôt en inactif.', confirmDeleteMember: 'Supprimer {n} ?',
-    role_president: 'Président·e', role_treasurer: 'Trésorier·e', role_secretary: 'Secrétaire', role_board: 'Membre du bureau', role_member: 'Membre', role_honorary: 'Membre d’honneur', role_benefactor: 'Membre bienfaiteur',
+    memberHasEntries: '{n} écritures sont liées à ce membre. Décochez plutôt « Membre en cours ».', confirmDeleteMember: 'Supprimer {n} ?',
+    role_none: 'Aucune', role_president: 'Président·e', role_treasurer: 'Trésorier·e', role_secretary: 'Secrétaire',
+    cat_founder: 'Membre fondateur', cat_actif: 'Membre actif', cat_adherent: 'Membre adhérent', cat_bienfaiteur: 'Membre bienfaiteur',
+    catS_founder: 'Fondateurs', catS_actif: 'Actifs', catS_adherent: 'Adhérents', catS_bienfaiteur: 'Bienfaiteurs',
+    tarifNormal: 'Normal', tarifStudent: 'Étudiant', catCounts: 'Par catégorie',
     feeDesc: 'Cotisation {y}',
     yearReport: 'Exercice {y}', allReport: 'Toutes périodes', repSub: '{i} recettes, {o} dépenses',
     recettes: 'Recettes', depenses: 'Dépenses', excedent: 'Excédent', deficit: 'Déficit',
     balances: 'Soldes des comptes', asOf: 'au {d}', now: 'à ce jour', sumTotal: 'Total', balHint: 'Comparez avec le relevé bancaire. En cas d’écart, cherchez une écriture manquante ou vérifiez le solde initial (Réglages).',
     byProject: 'Par projet', byMethod: 'Dépenses par moyen de paiement', noRecords: 'Aucune écriture', unassigned: '(non affecté)',
-    feesSection: 'Cotisations', feesLine: '{p} membres à jour sur {a} actifs', donorsSection: 'Dons par donateur', donorsHint: 'Base pour les reçus fiscaux. Vérifiez que les donateurs membres ont une adresse.',
+    feesSection: 'Cotisations', feesLine: '{p} membres à jour sur {a} membres en cours', donorsSection: 'Dons par donateur', donorsHint: 'Base pour les reçus fiscaux. Vérifiez que les donateurs membres ont une adresse.',
     missingPieces: '{n} dépenses sans justificatif ({a}).', seeList: 'Voir la liste',
     printReport: 'Imprimer / enregistrer en PDF', exportYear: 'Exporter cette année en CSV',
     thisDevice: 'Cet appareil', thisDeviceDesc: 'Votre nom est enregistré avec chaque écriture. La langue se règle séparément sur chaque appareil.',
     yourName: 'Votre nom', yourNamePh: 'ex. Camille', language: 'Langue',
     connTitle: 'Connexion Google Sheets', connDesc: 'Enregistré sur cet appareil uniquement : l’adresse et la clé ne figurent pas dans le code public.',
     connUrl: 'Adresse de l’application Apps Script', connKey: 'Clé d’accès', connKeyPh: 'Même valeur que ACCESS_KEY dans Code.gs', connect: 'Connecter et charger', copySetupLink: 'Copier le lien de connexion pour un autre appareil',
-    feesTitle: 'Cotisations et dons', feesDesc: 'Les recettes de la catégorie cotisation alimentent le suivi des membres.',
-    feeAmount: 'Cotisation annuelle (€)', feeCategory: 'Catégorie cotisation', donCategory: 'Catégorie dons',
+    feesTitle: 'Cotisations et dons', feesDesc: 'Les recettes de la catégorie cotisation alimentent le suivi des membres. Le montant proposé suit le tarif du membre (normal ou étudiant).',
+    feeNormal: 'Cotisation normale (€)', feeStudent: 'Cotisation étudiante (€)', feeCategory: 'Catégorie cotisation', donCategory: 'Catégorie dons',
+    lateJoin: 'Adhésions de fin d’année', lateJoinHint: 'Une première adhésion réglée à partir de cette date reste valable jusqu’au 31 décembre de l’année suivante.', lateOff: 'Désactivé', lateFrom: 'À partir du 1er {m}',
     accountsTitle: 'Comptes et soldes initiaux', accountsDesc: 'Montant présent sur chaque compte au démarrage de l’association : point de départ du calcul des soldes.',
     categoriesTitle: 'Catégories', methodsTitle: 'Moyens de paiement', projectsTitle: 'Projets / actions', dataTitle: 'Données',
     newAccountPh: 'Nouveau compte (ex. Livret A)', newCatPh: 'Nouvelle catégorie', newMethodPh: 'Nouveau moyen de paiement', newProjectPh: 'Nouveau projet', add: 'Ajouter',
@@ -604,7 +623,9 @@ const I18N = {
     nothingExport: 'Rien à exporter', downloaded: 'CSV téléchargé', askName: 'Indiquez votre nom dans les réglages pour signer vos écritures'
   }
 };
-const ROLES = ['president', 'treasurer', 'secretary', 'board', 'member', 'honorary', 'benefactor'];
+const ROLES = ['none', 'president', 'treasurer', 'secretary'];      // 직책 (bureau)
+const CATS = ['founder', 'actif', 'adherent', 'bienfaiteur'];      // 정관 제5조의 회원 등급
+const TARIFS = ['normal', 'student'];
 let lang = 'ko';
 function t(k, v) { let s = (I18N[lang] && I18N[lang][k]) ?? I18N.ko[k] ?? k; if (v) for (const x in v) s = s.split('{' + x + '}').join(v[x]); return s; }
 function applyI18n() {
@@ -624,7 +645,7 @@ const DEFAULTS = {
   methods: ['Espèces','Carte bancaire','Virement','Chèque','Prélèvement','En ligne (HelloAsso, PayPal…)'],
   accounts: [{ name: 'Banque', opening: 0 }, { name: 'Caisse', opening: 0 }],
   projects: ['Fonctionnement général'],
-  feeAmount: 20, feeCategory: 'Cotisations', donCategory: 'Dons'
+  feeNormal: 10, feeStudent: 5, lateMonth: 9, feeCategory: 'Cotisations', donCategory: 'Dons'
 };
 
 let entries = [], members = [];
@@ -632,10 +653,10 @@ let settings = clone(DEFAULTS);
 let conn = { url: '', key: '' };
 let device = { user: '', lang: '' };
 let queue = [];
-let form = { kind: 'out', method: '', receipt: 'paper', lastMemberName: '' };
+let form = { kind: 'out', method: '', receipt: 'paper', lastMemberName: '', autoAmt: '' };
 let editingId = null, returnTo = null;
 let flt = { year: String(new Date().getFullYear()), kind: 'all', project: 'all', q: '' };
-let mflt = { year: String(new Date().getFullYear()), status: 'all', q: '' };
+let mflt = { year: String(new Date().getFullYear()), status: 'all', cat: 'all', q: '' };
 let repYear = String(new Date().getFullYear());
 let catTab = 'catsOut';
 let detailId = null, memberId = null, lastPull = 0, askedName = false;
@@ -672,6 +693,11 @@ function memberById(id) { return id ? members.find(m => m.id === id) : null; }
 function feeYearOf(e) { return e.period || yearOf(e); }
 function isFee(e) { return e.kind === 'in' && e.category === settings.feeCategory; }
 function isDon(e) { return e.kind === 'in' && e.category === settings.donCategory; }
+// 회원의 회비 구분에 맞는 금액. 후원 회원은 금액이 정해져 있지 않아 비워 둬요.
+function feeFor(m) { if (m && m.category === 'bienfaiteur') return 0; return m && m.tarif === 'student' ? settings.feeStudent : settings.feeNormal; }
+function autoFee(m) { const v = feeFor(m); return v ? amtInput(v) : ''; }
+function eurShort(n) { return (Number.isInteger(n) ? String(n) : nf.format(n)) + ' €'; }
+function monthName(m) { return new Date(2026, m - 1, 1).toLocaleDateString(loc(), { month: 'long' }); }
 let toastTimer;
 function toast(html, ms = 2400) { const el = $('toast'); el.innerHTML = html; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), ms); }
 
@@ -698,7 +724,9 @@ function mergeSettings(s) {
   const out = clone(DEFAULTS);
   ['catsIn','catsOut','methods','projects'].forEach(k => { if (arr(s[k]).length) out[k] = s[k].map(String); });
   if (arr(s.accounts).length) out.accounts = s.accounts.map(a => typeof a === 'string' ? { name: a, opening: 0 } : { name: String(a.name), opening: parseAmount(a.opening) });
-  if (s.feeAmount != null) out.feeAmount = parseAmount(s.feeAmount);
+  if (s.feeNormal != null) out.feeNormal = parseAmount(s.feeNormal);
+  if (s.feeStudent != null) out.feeStudent = parseAmount(s.feeStudent);
+  if (s.lateMonth != null) out.lateMonth = Math.max(0, Math.min(12, parseInt(s.lateMonth, 10) || 0));
   if (s.feeCategory) out.feeCategory = String(s.feeCategory);
   if (s.donCategory) out.donCategory = String(s.donCategory);
   return out;
@@ -715,10 +743,19 @@ function normalize(e) {
     by: e.by || '', updated: e.updated || ''
   };
 }
+// 예전 "역할" 하나에 섞여 있던 값을 등급과 직책으로 나눠요
+function memberCategory(m) {
+  if (CATS.includes(m.category)) return m.category;
+  if (m.role === 'benefactor') return 'bienfaiteur';
+  if (m.role === 'president' || m.role === 'treasurer') return 'founder';
+  if (m.role === 'board' || m.role === 'secretary') return 'actif';
+  return 'adherent';
+}
 function normMember(m) {
   return {
     id: String(m.id), name: m.name || '', email: m.email || '', phone: m.phone ? String(m.phone) : '', address: m.address || '',
-    role: ROLES.includes(m.role) ? m.role : 'member', joined: parseDate(m.joined), note: m.note || '',
+    role: ROLES.includes(m.role) ? m.role : 'none', category: memberCategory(m), tarif: TARIFS.includes(m.tarif) ? m.tarif : 'normal',
+    joined: parseDate(m.joined), note: m.note || '',
     active: !(m.active === false || m.active === 'false' || m.active === 'FALSE' || m.active === 0), updated: m.updated || ''
   };
 }
@@ -855,7 +892,10 @@ function updateMemberField() {
   $('wrap-member').hidden = !(fee || don);
   $('wrap-period').hidden = !fee;
   $('label-member').textContent = t(fee ? 'memberFee' : 'memberDon');
-  if (fee && !editingId && !$('f-amount').value && settings.feeAmount) $('f-amount').value = amtInput(settings.feeAmount);
+  if (fee && !editingId) {
+    const cur = $('f-amount').value;
+    if (!cur || cur === form.autoAmt) { const auto = autoFee(memberById($('f-member').value)); $('f-amount').value = auto; form.autoAmt = auto; }
+  }
 }
 function renderMethodChips() {
   if (!settings.methods.includes(form.method)) form.method = settings.methods[0] || '';
@@ -910,7 +950,7 @@ function resetForm(keepKind) {
   $('edit-banner').classList.remove('show');
   $('f-amount').value = ''; $('f-desc').value = ''; $('f-party').value = ''; $('f-note').value = '';
   $('f-date').value = today();
-  form.lastMemberName = '';
+  form.lastMemberName = ''; form.autoAmt = '';
   renderMemberSelect(''); renderPeriodSelect();
   if (!keepKind) setKind('out'); else { formLabels(); updateMemberField(); }
   setReceipt(form.kind === 'move' ? 'none' : 'paper');
@@ -1003,7 +1043,7 @@ function collectFee(mid, year) {
   resetForm();
   setKind('in');
   renderCategorySelect(settings.feeCategory);
-  $('f-amount').value = amtInput(settings.feeAmount);
+  $('f-amount').value = form.autoAmt = autoFee(m);
   renderMemberSelect(mid); renderPeriodSelect(year);
   $('f-party').value = m.name; form.lastMemberName = m.name;
   setReceipt('none');
@@ -1110,6 +1150,18 @@ function deleteEntry(id) {
 
 /* ───────── 회원 ───────── */
 function feePaid(mid, year) { return entries.filter(e => isFee(e) && e.memberId === mid && feeYearOf(e) === year); }
+// 연말 가입 규칙: 설정한 달 이후 "처음" 낸 그해 회비는 다음 해까지 유효해요 (재가입은 해당 없음)
+function carriedFee(mid, year) {
+  const lm = +settings.lateMonth; if (!lm) return null;
+  const fees = entries.filter(e => isFee(e) && e.memberId === mid).sort((a, b) => a.date.localeCompare(b.date) || feeYearOf(a).localeCompare(feeYearOf(b)));
+  const f = fees[0]; if (!f) return null;
+  const py = String(+year - 1);
+  return feeYearOf(f) === py && f.date.slice(0, 4) === py && +f.date.slice(5, 7) >= lm ? f : null;
+}
+function covered(mid, year) { return feePaid(mid, year).length > 0 || !!carriedFee(mid, year); }
+function memberSub(m) {
+  return [t('cat_' + m.category), m.role !== 'none' ? t('role_' + m.role) : '', m.tarif === 'student' && m.category !== 'bienfaiteur' ? t('tarifStudent') : ''].filter(Boolean);
+}
 function memberYears() {
   const ys = new Set(entries.filter(isFee).map(feeYearOf));
   const y = new Date().getFullYear(); ys.add(String(y)); ys.add(String(y + 1));
@@ -1118,9 +1170,10 @@ function memberYears() {
 function renderMembers() {
   const Y = mflt.year;
   chipRow('m-year', memberYears().map(y => [y, t('yearN', { y })]), Y, 'my');
+  chipRow('m-cat', [['all', t('allCats')], ...CATS.map(c => [c, t('catS_' + c)])], mflt.cat, 'mc');
   chipRow('m-filter', [['all', t('mfAll')], ['paid', t('mfPaid')], ['unpaid', t('mfUnpaid')], ['inactive', t('mfInactive')]], mflt.status, 'mf');
   const active = members.filter(m => m.active);
-  const paidSet = new Set(active.filter(m => feePaid(m.id, Y).length).map(m => m.id));
+  const paidSet = new Set(active.filter(m => covered(m.id, Y)).map(m => m.id));
   $('m-active').textContent = active.length;
   $('m-paid').innerHTML = `<span class="mark in">${paidSet.size}</span> / ${active.length}`;
   $('m-fees').textContent = eur(sum(entries.filter(e => isFee(e) && feeYearOf(e) === Y)));
@@ -1128,6 +1181,7 @@ function renderMembers() {
   const q = mflt.q.trim().toLowerCase();
   const list = members.filter(m => {
     if (q && ![m.name, m.email, m.phone].join(' ').toLowerCase().includes(q)) return false;
+    if (mflt.cat !== 'all' && m.category !== mflt.cat) return false;
     if (mflt.status === 'inactive') return !m.active;
     if (!m.active) return mflt.status === 'all';
     if (mflt.status === 'paid') return paidSet.has(m.id);
@@ -1143,8 +1197,9 @@ function renderMembers() {
     let status, action = '';
     if (!m.active) status = `<span class="status inactive">${t('inactive')}</span>`;
     else if (pays.length) status = `<span class="status paid num">${eur(sum(pays))}</span>`;
+    else if (carriedFee(m.id, Y)) status = `<span class="status carried">${esc(t('carried', { y: +Y - 1 }))}</span>`;
     else { status = `<span class="status unpaid">${t('unpaid')}</span>`; action = `<button class="btn small" data-collect="${esc(m.id)}">${t('collectShort')}</button>`; }
-    const sub = [t('role_' + m.role), m.email].filter(Boolean).join(' · ');
+    const sub = [...memberSub(m), m.email].filter(Boolean).join(' · ');
     return `<div class="member"><div class="member-main" data-mid="${esc(m.id)}" role="button" tabindex="0"><div class="member-name">${esc(m.name)}</div><div class="member-sub">${esc(sub)}</div></div>${status}${action}</div>`;
   }).join('');
 }
@@ -1153,7 +1208,7 @@ function openMember(id) {
   memberId = id;
   $('mb-view').hidden = false; $('mb-form').hidden = true;
   $('mb-title').textContent = m.name;
-  $('mb-sub').textContent = [t('role_' + m.role), m.joined ? t('since', { d: fmtDate(m.joined) }) : '', m.active ? '' : t('inactive')].filter(Boolean).join(' · ');
+  $('mb-sub').textContent = [...memberSub(m), m.joined ? t('since', { d: fmtDate(m.joined) }) : '', m.active ? '' : t('inactive')].filter(Boolean).join(' · ');
   const fees = entries.filter(e => isFee(e) && e.memberId === id).sort((a, b) => feeYearOf(b).localeCompare(feeYearOf(a)));
   const dons = entries.filter(e => isDon(e) && e.memberId === id);
   const rows = [m.email && [t('mEmail'), m.email], m.phone && [t('mPhone'), m.phone], m.address && [t('mAddress'), m.address], m.note && [t('note'), m.note]].filter(Boolean);
@@ -1166,7 +1221,7 @@ function openMember(id) {
     html += `<div class="section" style="margin-top:18px"><h2><span>${t('mDons')}</span></h2>` + Object.entries(byYear).sort((a, b) => b[0] - a[0]).map(([y, v]) => `<div class="rline"><span class="k">${y}</span><span class="v num">${eur(v)}</span></div>`).join('') + `</div>`;
   }
   $('mb-body').innerHTML = html;
-  $('mb-collect').hidden = !(m.active && !feePaid(id, mflt.year).length);
+  $('mb-collect').hidden = !(m.active && !covered(id, mflt.year));
   $('mb-collect').textContent = t('collectFee', { y: mflt.year });
   $('member-bg').classList.add('show');
 }
@@ -1175,8 +1230,11 @@ function editMember(id) {
   memberId = id || null;
   $('mb-view').hidden = true; $('mb-form').hidden = false;
   $('mf-title').textContent = t(m ? 'editMember' : 'newMember');
+  $('mf-category').innerHTML = CATS.map(c => `<option value="${c}">${esc(t('cat_' + c))}</option>`).join('');
   $('mf-role').innerHTML = ROLES.map(r => `<option value="${r}">${esc(t('role_' + r))}</option>`).join('');
-  $('mf-name').value = m ? m.name : ''; $('mf-role').value = m ? m.role : 'member';
+  $('mf-name').value = m ? m.name : '';
+  $('mf-category').value = m ? m.category : 'adherent'; $('mf-role').value = m ? m.role : 'none';
+  setTarif(m ? m.tarif : 'normal');
   $('mf-joined').value = m ? m.joined : today();
   $('mf-email').value = m ? m.email : ''; $('mf-phone').value = m ? m.phone : '';
   $('mf-address').value = m ? m.address : ''; $('mf-note').value = m ? m.note : '';
@@ -1185,12 +1243,18 @@ function editMember(id) {
   $('member-bg').classList.add('show');
   setTimeout(() => $('mf-name').focus(), 50);
 }
+let mfTarif = 'normal';
+function setTarif(v) {
+  mfTarif = v;
+  $('mf-tarif').innerHTML = TARIFS.map(x => `<button type="button" class="chip" data-v="${x}" aria-pressed="${x === v}">${esc(t(x === 'student' ? 'tarifStudent' : 'tarifNormal'))} ${eurShort(x === 'student' ? settings.feeStudent : settings.feeNormal)}</button>`).join('');
+  $('wrap-tarif').style.visibility = $('mf-category').value === 'bienfaiteur' ? 'hidden' : '';
+}
 function saveMember() {
   const name = $('mf-name').value.trim();
   if (!name) { toast(t('errName')); return; }
   const prev = memberById(memberId);
   const m = normMember({
-    id: prev ? prev.id : 'm' + Date.now(), name, role: $('mf-role').value, joined: $('mf-joined').value,
+    id: prev ? prev.id : 'm' + Date.now(), name, role: $('mf-role').value, category: $('mf-category').value, tarif: mfTarif, joined: $('mf-joined').value,
     email: $('mf-email').value.trim(), phone: $('mf-phone').value.trim(), address: $('mf-address').value.trim(),
     note: $('mf-note').value.trim(), active: $('mf-active').checked, updated: new Date().toISOString()
   });
@@ -1251,9 +1315,11 @@ function renderReport() {
   let feeHtml = '';
   if (repYear !== 'all' && members.length) {
     const active = members.filter(m => m.active);
-    const paid = active.filter(m => feePaid(m.id, repYear).length).length;
+    const paid = active.filter(m => covered(m.id, repYear)).length;
+    const cats = CATS.map(c => [c, active.filter(m => m.category === c).length]).filter(x => x[1]).map(([c, n]) => t('catS_' + c) + ' ' + n).join(' · ');
     feeHtml = `<div class="section"><h2><span>${t('feesSection')}</span><span class="num">${eur(sum(entries.filter(e => isFee(e) && feeYearOf(e) === repYear)))}</span></h2>
-      <div class="rline"><span class="k">${t('feesLine', { a: active.length, p: paid })}</span></div></div>`;
+      <div class="rline"><span class="k">${t('feesLine', { a: active.length, p: paid })}</span></div>
+      ${cats ? `<div class="rline"><span class="k">${t('catCounts')}</span><span class="v">${esc(cats)}</span></div>` : ''}</div>`;
   }
   const dons = ins.filter(isDon);
   const donHtml = dons.length ? `<div class="section"><h2><span>${t('donorsSection')}</span><span class="num">${eur(sum(dons))}</span></h2>
@@ -1303,9 +1369,12 @@ function csv(list) {
 }
 function membersCsv(year) {
   const roleFr = I18N.fr;
-  const head = ['Nom','Rôle','Adhésion','Actif','E-mail','Téléphone','Adresse','Cotisation ' + year, 'Dons ' + year, 'Note'];
+  const head = ['Nom','Catégorie','Fonction au bureau','Tarif','Adhésion','Statut','E-mail','Téléphone','Adresse','À jour ' + year,'Cotisation ' + year, 'Dons ' + year, 'Note'];
   const rows = [...members].sort((a, b) => a.name.localeCompare(b.name)).map(m => [
-    m.name, roleFr['role_' + m.role], m.joined, m.active ? 'Oui' : 'Non', m.email, m.phone, m.address,
+    m.name, roleFr['cat_' + m.category], m.role === 'none' ? '' : roleFr['role_' + m.role],
+    m.category === 'bienfaiteur' ? '' : roleFr[m.tarif === 'student' ? 'tarifStudent' : 'tarifNormal'],
+    m.joined, m.active ? 'En cours' : 'Ancien membre', m.email, m.phone, m.address,
+    feePaid(m.id, year).length ? 'Oui' : carriedFee(m.id, year) ? 'Oui (adhésion ' + (+year - 1) + ')' : 'Non',
     n2(sum(feePaid(m.id, year))), n2(sum(entries.filter(e => isDon(e) && e.memberId === m.id && yearOf(e) === year))), m.note
   ].map(cq).join(';'));
   return '﻿' + [head.join(';'), ...rows].join('\r\n');
@@ -1338,7 +1407,10 @@ function listEditor(elId, key, field) {
 function renderSettings() {
   $('s-user').value = device.user;
   $('s-url').value = conn.url; $('s-key').value = conn.key;
-  $('s-fee-amount').value = amtInput(settings.feeAmount);
+  $('s-fee-normal').value = amtInput(settings.feeNormal);
+  $('s-fee-student').value = amtInput(settings.feeStudent);
+  $('s-late').innerHTML = `<option value="0">${esc(t('lateOff'))}</option>` + [6, 7, 8, 9, 10, 11, 12].map(m => `<option value="${m}">${esc(t('lateFrom', { m: monthName(m) }))}</option>`).join('');
+  $('s-late').value = String(settings.lateMonth || 0);
   const catOpts = settings.catsIn.map(c => `<option>${esc(c)}</option>`).join('');
   $('s-fee-cat').innerHTML = catOpts; $('s-fee-cat').value = settings.feeCategory;
   $('s-don-cat').innerHTML = catOpts; $('s-don-cat').value = settings.donCategory;
@@ -1414,6 +1486,7 @@ $('f-member').onchange = () => {
   if (m && (!party.value || party.value === form.lastMemberName)) party.value = m.name;
   if (!m && party.value === form.lastMemberName) party.value = '';
   form.lastMemberName = m ? m.name : '';
+  updateMemberField();
 };
 $('f-date').onchange = () => { updatePieceHint(); if (!$('wrap-period').hidden) renderPeriodSelect($('f-period').value); };
 $('f-amount').oninput = function () { this.value = this.value.replace(/[^0-9.,]/g, ''); };
@@ -1433,6 +1506,9 @@ $('btn-export').onclick = () => exportList(filtered(), flt.year === 'all' ? 'tou
 
 chipClick('m-year', c => { mflt.year = c.dataset.my; renderMembers(); });
 chipClick('m-filter', c => { mflt.status = c.dataset.mf; renderMembers(); });
+chipClick('m-cat', c => { mflt.cat = c.dataset.mc; renderMembers(); });
+chipClick('mf-tarif', c => setTarif(c.dataset.v));
+$('mf-category').onchange = () => setTarif(mfTarif);
 $('m-q').oninput = function () { mflt.q = this.value; renderMembers(); };
 $('member-list').onclick = ev => {
   const col = ev.target.closest('[data-collect]'); if (col) { collectFee(col.dataset.collect, mflt.year); return; }
@@ -1461,7 +1537,9 @@ $('btn-export-all').onclick = () => exportList(entries, 'tout');
 
 $('s-user').onchange = function () { device.user = this.value.trim(); saveDevice(); toast(t('settingsSaved')); };
 chipClick('s-lang', c => setLang(c.dataset.lang));
-$('s-fee-amount').onchange = function () { settings.feeAmount = parseAmount(this.value); pushSettings(); renderSettings(); toast(t('settingsSaved')); };
+$('s-fee-normal').onchange = function () { settings.feeNormal = parseAmount(this.value); pushSettings(); renderSettings(); toast(t('settingsSaved')); };
+$('s-fee-student').onchange = function () { settings.feeStudent = parseAmount(this.value); pushSettings(); renderSettings(); toast(t('settingsSaved')); };
+$('s-late').onchange = function () { settings.lateMonth = +this.value; pushSettings(); toast(t('settingsSaved')); };
 $('s-fee-cat').onchange = function () { settings.feeCategory = this.value; afterSettingsChange(); toast(t('settingsSaved')); };
 $('s-don-cat').onchange = function () { settings.donCategory = this.value; afterSettingsChange(); toast(t('settingsSaved')); };
 $('btn-connect').onclick = async () => {
