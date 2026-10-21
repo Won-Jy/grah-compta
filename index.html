@@ -153,6 +153,7 @@ select.input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://ww
 .status.paid { background: var(--in); }
 .status.unpaid { border: 1.5px dashed var(--ink); padding: 2px 7px; }
 .status.inactive { color: var(--grey); font-weight: 500; }
+.tag-heb { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 600; padding: 0 6px; border-radius: 4px; background: var(--move); vertical-align: 2px; }
 .status.carried { border: 1.5px solid var(--ink); padding: 2px 7px; font-weight: 600; }
 
 /* 보고서 */
@@ -478,6 +479,8 @@ select.input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://ww
       <div class="field"><label for="mf-phone"><span data-i18n="mPhone"></span> <span class="opt" data-i18n="optional"></span></label><input class="input" id="mf-phone" type="tel" autocomplete="off"></div>
       <div class="field"><label for="mf-address"><span data-i18n="mAddress"></span> <span class="opt" data-i18n="optional"></span></label><textarea class="input" id="mf-address" rows="2"></textarea><div class="hint" data-i18n="mAddressHint"></div></div>
       <div class="field"><label for="mf-note"><span data-i18n="note"></span> <span class="opt" data-i18n="optional"></span></label><input class="input" id="mf-note" autocomplete="off"></div>
+      <label class="check" style="margin-bottom:4px"><input type="checkbox" id="mf-heb"> <span data-i18n="mHeb"></span></label>
+      <div class="hint" style="margin:0 0 16px 30px" data-i18n="mHebHint"></div>
       <label class="check" style="margin-bottom:4px"><input type="checkbox" id="mf-active"> <span data-i18n="mActive"></span></label>
       <div class="hint" style="margin:0 0 16px 30px" data-i18n="mActiveHint"></div>
       <div class="sheet-actions">
@@ -518,7 +521,8 @@ const I18N = {
     dKind: '구분', dAccount: '계정', dMember: '회원', dBy: '입력', dPeriod: '회비 연도',
     delete: '삭제', edit: '수정', close: '닫기', cancel: '취소', confirmDelete: '"{t}" {a}을(를) 삭제할까요?', deleted: '삭제했어요',
     activeMembers: '현재 회원', paidCount: '회비 납부', feeTotal: '회비 합계',
-    mfAll: '모두', mfPaid: '납부', mfUnpaid: '미납', mfInactive: '지난 회원', allCats: '모든 등급',
+    mfAll: '모두', mfPaid: '납부', mfUnpaid: '미납', mfInactive: '지난 회원', mfHeb: 'hébergement 연결 희망', allCats: '모든 등급',
+    mHeb: 'hébergement solidaire 네트워크 연결 희망', mHebHint: '본인이 동의한 경우에만 체크하세요. RESF에 연락처를 전달할 때만 쓰고, 실제로 누구를 재우는지는 기록하지 않아요. 회원 CSV에도 나오지 않아요.', hebTag: 'hébergement', hebRow: 'hébergement solidaire', hebSince: '연결 희망 ({d} 동의)',
     memberSearchPh: '이름, 이메일 검색', exportMembers: '회원 CSV', addMember: '회원 추가',
     membersEmptyTitle: '아직 회원이 없어요', membersEmptyBody: '회원을 추가하면 연도별 회비 납부 현황을 볼 수 있어요.',
     paid: '납부', unpaid: '미납', inactive: '지난 회원', carried: '{y}년 가입 포함', collectFee: '{y}년 회비 받기', collectShort: '회비 받기',
@@ -582,7 +586,8 @@ const I18N = {
     dKind: 'Type', dAccount: 'Compte', dMember: 'Membre', dBy: 'Saisi par', dPeriod: 'Année de cotisation',
     delete: 'Supprimer', edit: 'Modifier', close: 'Fermer', cancel: 'Annuler', confirmDelete: 'Supprimer « {t} » ({a}) ?', deleted: 'Supprimé',
     activeMembers: 'Membres en cours', paidCount: 'À jour', feeTotal: 'Cotisations',
-    mfAll: 'Tous', mfPaid: 'À jour', mfUnpaid: 'Non réglée', mfInactive: 'Anciens membres', allCats: 'Toutes catégories',
+    mfAll: 'Tous', mfPaid: 'À jour', mfUnpaid: 'Non réglée', mfInactive: 'Anciens membres', mfHeb: 'Réseau hébergement', allCats: 'Toutes catégories',
+    mHeb: 'Souhaite être mis·e en relation avec le réseau d’hébergement solidaire', mHebHint: 'À cocher uniquement avec l’accord du membre. Sert seulement à transmettre ses coordonnées au réseau partenaire (RESF) ; les hébergements eux-mêmes ne sont jamais enregistrés. N’apparaît pas dans le CSV des membres.', hebTag: 'hébergement', hebRow: 'Hébergement solidaire', hebSince: 'mise en relation souhaitée (accord du {d})',
     memberSearchPh: 'Nom, e-mail', exportMembers: 'CSV membres', addMember: 'Ajouter un membre',
     membersEmptyTitle: 'Aucun membre pour l’instant', membersEmptyBody: 'Ajoutez les membres pour suivre les cotisations par année.',
     paid: 'À jour', unpaid: 'Non réglée', inactive: 'Ancien membre', carried: 'Incluse (adhésion {y})', collectFee: 'Encaisser la cotisation {y}', collectShort: 'Encaisser',
@@ -755,6 +760,7 @@ function normMember(m) {
   return {
     id: String(m.id), name: m.name || '', email: m.email || '', phone: m.phone ? String(m.phone) : '', address: m.address || '',
     role: ROLES.includes(m.role) ? m.role : 'none', category: memberCategory(m), tarif: TARIFS.includes(m.tarif) ? m.tarif : 'normal',
+    heb: m.heb === true || m.heb === 'true' || m.heb === 'TRUE', hebDate: parseDate(m.hebDate),
     joined: parseDate(m.joined), note: m.note || '',
     active: !(m.active === false || m.active === 'false' || m.active === 'FALSE' || m.active === 0), updated: m.updated || ''
   };
@@ -1171,7 +1177,7 @@ function renderMembers() {
   const Y = mflt.year;
   chipRow('m-year', memberYears().map(y => [y, t('yearN', { y })]), Y, 'my');
   chipRow('m-cat', [['all', t('allCats')], ...CATS.map(c => [c, t('catS_' + c)])], mflt.cat, 'mc');
-  chipRow('m-filter', [['all', t('mfAll')], ['paid', t('mfPaid')], ['unpaid', t('mfUnpaid')], ['inactive', t('mfInactive')]], mflt.status, 'mf');
+  chipRow('m-filter', [['all', t('mfAll')], ['paid', t('mfPaid')], ['unpaid', t('mfUnpaid')], ['inactive', t('mfInactive')], ['heb', t('mfHeb')]], mflt.status, 'mf');
   const active = members.filter(m => m.active);
   const paidSet = new Set(active.filter(m => covered(m.id, Y)).map(m => m.id));
   $('m-active').textContent = active.length;
@@ -1183,6 +1189,7 @@ function renderMembers() {
     if (q && ![m.name, m.email, m.phone].join(' ').toLowerCase().includes(q)) return false;
     if (mflt.cat !== 'all' && m.category !== mflt.cat) return false;
     if (mflt.status === 'inactive') return !m.active;
+    if (mflt.status === 'heb') return m.active && m.heb;
     if (!m.active) return mflt.status === 'all';
     if (mflt.status === 'paid') return paidSet.has(m.id);
     if (mflt.status === 'unpaid') return !paidSet.has(m.id);
@@ -1200,7 +1207,7 @@ function renderMembers() {
     else if (carriedFee(m.id, Y)) status = `<span class="status carried">${esc(t('carried', { y: +Y - 1 }))}</span>`;
     else { status = `<span class="status unpaid">${t('unpaid')}</span>`; action = `<button class="btn small" data-collect="${esc(m.id)}">${t('collectShort')}</button>`; }
     const sub = [...memberSub(m), m.email].filter(Boolean).join(' · ');
-    return `<div class="member"><div class="member-main" data-mid="${esc(m.id)}" role="button" tabindex="0"><div class="member-name">${esc(m.name)}</div><div class="member-sub">${esc(sub)}</div></div>${status}${action}</div>`;
+    return `<div class="member"><div class="member-main" data-mid="${esc(m.id)}" role="button" tabindex="0"><div class="member-name">${esc(m.name)}${m.heb && m.active ? `<span class="tag-heb">${t('hebTag')}</span>` : ''}</div><div class="member-sub">${esc(sub)}</div></div>${status}${action}</div>`;
   }).join('');
 }
 function openMember(id) {
@@ -1211,7 +1218,7 @@ function openMember(id) {
   $('mb-sub').textContent = [...memberSub(m), m.joined ? t('since', { d: fmtDate(m.joined) }) : '', m.active ? '' : t('inactive')].filter(Boolean).join(' · ');
   const fees = entries.filter(e => isFee(e) && e.memberId === id).sort((a, b) => feeYearOf(b).localeCompare(feeYearOf(a)));
   const dons = entries.filter(e => isDon(e) && e.memberId === id);
-  const rows = [m.email && [t('mEmail'), m.email], m.phone && [t('mPhone'), m.phone], m.address && [t('mAddress'), m.address], m.note && [t('note'), m.note]].filter(Boolean);
+  const rows = [m.email && [t('mEmail'), m.email], m.phone && [t('mPhone'), m.phone], m.address && [t('mAddress'), m.address], m.heb && [t('hebRow'), t('hebSince', { d: m.hebDate ? fmtDate(m.hebDate) : '—' })], m.note && [t('note'), m.note]].filter(Boolean);
   let html = rows.map(([k, v]) => `<div class="rline"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join('');
   html += `<div class="section" style="margin-top:18px"><h2><span>${t('mPayments')}</span></h2>` +
     (fees.length ? fees.map(e => `<div class="rline"><span class="k">${esc(feeYearOf(e))} <small>${esc(fmtDate(e.date))}${e.method ? ', ' + esc(e.method) : ''}</small></span><span class="v num">${eur(e.amount)}</span></div>`).join('')
@@ -1239,6 +1246,7 @@ function editMember(id) {
   $('mf-email').value = m ? m.email : ''; $('mf-phone').value = m ? m.phone : '';
   $('mf-address').value = m ? m.address : ''; $('mf-note').value = m ? m.note : '';
   $('mf-active').checked = m ? m.active : true;
+  $('mf-heb').checked = m ? m.heb : false;
   $('mf-delete').hidden = !m;
   $('member-bg').classList.add('show');
   setTimeout(() => $('mf-name').focus(), 50);
@@ -1256,7 +1264,8 @@ function saveMember() {
   const m = normMember({
     id: prev ? prev.id : 'm' + Date.now(), name, role: $('mf-role').value, category: $('mf-category').value, tarif: mfTarif, joined: $('mf-joined').value,
     email: $('mf-email').value.trim(), phone: $('mf-phone').value.trim(), address: $('mf-address').value.trim(),
-    note: $('mf-note').value.trim(), active: $('mf-active').checked, updated: new Date().toISOString()
+    note: $('mf-note').value.trim(), active: $('mf-active').checked, updated: new Date().toISOString(),
+    heb: $('mf-heb').checked, hebDate: $('mf-heb').checked ? ((prev && prev.heb && prev.hebDate) || today()) : ''
   });
   if (prev) members[members.indexOf(prev)] = m; else members.push(m);
   saveLocal(); renderMembers(); renderPartyList(); renderMemberSelect($('f-member').value);
